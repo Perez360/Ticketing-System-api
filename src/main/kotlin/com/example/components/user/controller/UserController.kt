@@ -5,6 +5,7 @@ import com.example.shared.APIResponse
 
 interface UserController {
     suspend fun  registerUser(user: User): APIResponse<User>
+    suspend fun  loginUser(email:String ,password:String): APIResponse<User>
     suspend fun changeUserPassword(userID: Int, newPassword: String): APIResponse<User>
     suspend fun changeUserPhoneNumber(userID: Int, newPhoneNumber: String): APIResponse<User>
     suspend fun deleteUser(userID: Int): APIResponse<String>

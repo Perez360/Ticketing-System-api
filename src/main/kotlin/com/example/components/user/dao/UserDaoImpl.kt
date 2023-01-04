@@ -2,12 +2,11 @@ package com.example.components.user.dao
 
 import User
 import com.example.components.user.UserTable
-import kotlinx.coroutines.delay
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.transactions.transaction
 
-class JDBCUserDetailsImpl : UserDao {
+class UserDaoImpl : UserDao {
     override suspend fun create(user: User): Int {
         return transaction {
             UserTable.insert {
@@ -95,4 +94,7 @@ class JDBCUserDetailsImpl : UserDao {
             }
         }
     }
+
+    override fun size(): Int=9
+
 }

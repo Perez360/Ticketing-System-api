@@ -11,5 +11,5 @@ object UserTable : Table("users") {
     val phone: Column<String> = varchar("phone",10)
     val password: Column<String> = varchar("password", 255)
 
-    override val primaryKey: PrimaryKey? = PrimaryKey(id)
+    override val primaryKey: PrimaryKey = PrimaryKey(id)
 }

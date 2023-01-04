@@ -8,5 +8,7 @@ interface UserDao {
     suspend fun update(user: User): Int;
     suspend fun delete(userID: Int): Int;
     suspend fun list(start: Int, size: Int): List<User>;
-    suspend fun listByName(startIndex: Int, size: Int, byName:String?): List<User>;
+    suspend fun listByName(startIndex: Int, size: Int, byName:String?): List<User>
+    fun size():Int
+
 }

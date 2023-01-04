@@ -13,16 +13,16 @@ import org.slf4j.LoggerFactory
 import uk.co.jemos.podam.api.PodamFactoryImpl
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS) //This annotation ask Junit5 to create only one instance of the class TradePostServiceTest and use it to perform the tests
-internal class JDBCUserDetailsImplTest {
+internal class UserDaoImplTest {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
     private var factory: PodamFactoryImpl = PodamFactoryImpl()
     private lateinit var userList: List<User>
-    private lateinit var underTest: JDBCUserDetailsImpl
+    private lateinit var underTest: UserDaoImpl
 
     @BeforeAll
     fun setUp() {
         //DatabaseFactory.init()
-        underTest = JDBCUserDetailsImpl()
+        underTest = UserDaoImpl()
         userList = factory.manufacturePojoWithFullData(List::class.java, User::class.java) as List<User>
         userList.forEach { user: User ->
             //underTest.create(user)
