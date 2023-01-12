@@ -1,0 +1,14 @@
+.container-main {
+  margin: 50px auto;
+  background: lightblue;
+  border-radius: 5px;
+  width: fit-content;
+  padding: 10px 100px 50px;
+  font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+    "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+}
+
+.head {
+  margin-bottom: 50px;
+  text-align: center;
+}

@@ -5,8 +5,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class APIResponse<T>(
-    val systemCode: String,
+    val code: Int,
     val message: String,
-    val httpCode: String,
     val data: List<T>
 )

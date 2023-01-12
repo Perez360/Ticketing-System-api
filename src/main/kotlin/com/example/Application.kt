@@ -1,8 +1,7 @@
 package com.example
 
-import com.example.components.user.web.configureRouting
-import com.example.core.plugins.configureDependencyInjection
-import com.example.services.DatabaseFactory
+import com.example.components.web.configureRouting
+import com.example.db.DatabaseFactory
 import configureSerialization
 import io.ktor.server.application.*
 import io.ktor.server.engine.*
@@ -16,6 +15,8 @@ fun main() {
 }
 
 fun Application.module() {
+    environment.config.config("application")
     configureSerialization()
+//    configureJWTAuthentication()
     configureRouting()
 }
