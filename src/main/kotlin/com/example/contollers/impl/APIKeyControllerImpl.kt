@@ -3,6 +3,7 @@ package com.example.contollers.impl
 import com.example.services.APIKeyRepository
 import com.example.models.APIKey
 import com.example.contollers.ApiKeyController
+import com.example.dtos.user.CreateAPIKeyDto
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -19,20 +20,19 @@ class APIKeyControllerImpl : ApiKeyController {
         bind<ApiKeyController>() with singleton { APIKeyControllerImpl() }
     }
     private val apikeyRepository: APIKeyRepository = kodein.instance()
-    override suspend fun addAPIKey(createAPIKeyParams: com.example.dtos.CreateAPIKeyParams): APIResponse<APIKey> {
+    override suspend fun addAPIKey(createAPIKeyDto: CreateAPIKeyDto): APIResponse<APIKey> {
 
         val response: APIResponse<APIKey> = try {
-            val count = apikeyRepository.create(createAPIKeyParams)
+            val count = apikeyRepository.create(createAPIKeyDto)
             if (count > 0) {
                 val apiKey = APIKey(
-                    name = createAPIKeyParams.name,
-                    authorName = createAPIKeyParams.authorName,
-                    description = createAPIKeyParams.description,
-                    dateCreated = createAPIKeyParams.dateCreated,
-                    canCreateUsers = if (createAPIKeyParams.canCreateUsers) 1 else 0,
-                    canCreateTickets = if (createAPIKeyParams.canCreateTickets) 1 else 0,
-                    canCheckTickets = if (createAPIKeyParams.canCheckTickets) 1 else 0,
-                    shouldReturnTicketNumber = if (createAPIKeyParams.shouldReturnTicketNumber) 1 else 0,
+                    name = createAPIKeyDto.name,
+                    description = createAPIKeyDto.description,
+                    dateCreated = createAPIKeyDto.dateCreated,
+                    canCreateUsers = createAPIKeyDto.canCreateUsers,
+                    canCreateTickets = createAPIKeyDto.canCreateTickets,
+                    canCheckTickets = createAPIKeyDto.canCheckTickets,
+                    shouldReturnTicketNumber = createAPIKeyDto.shouldReturnTicketNumber,
                 )
                 APIResponse(HttpStatusCode.Created.value, "Successfully created", listOf(apiKey))
             } else {

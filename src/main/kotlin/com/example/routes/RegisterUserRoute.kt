@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.contollers.UserController
 import com.example.contollers.impl.UserControllerImpl
+import com.example.dtos.user.SignupUserDto
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
 import com.github.salomonbrys.kodein.instance
@@ -40,7 +41,7 @@ fun Application.configureRegister() {
             val password = formParameters["password"]
 
             val response = userController.registerUser(
-                com.example.dtos.RegisterUserParams(
+                SignupUserDto(
                     firstname = firstname,
                     lastname = lastname,
                     email = email,

@@ -3,6 +3,7 @@ package com.example.routes
 import com.example.security.UserRequestAuthentication
 import com.example.contollers.UserController
 import com.example.contollers.impl.UserControllerImpl
+import com.example.dtos.user.ChangeAvatarDto
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -37,13 +38,13 @@ fun Application.configureAvatar(){
                 ) {
 
                     val authResponse = UserRequestAuthentication.authenticateRequest(
-                        csrf_userid = csrf_userid,
-                        csrf_token = csrf_token
+                        csrfUserId = csrf_userid,
+                        csrfToken = csrf_token
 
                     )
                     if (authResponse.code == HttpStatusCode.OK.value) {
                         val response = userController.addAvatar(
-                            com.example.dtos.ChangeAvatarParams(
+                            ChangeAvatarDto(
                                 csrf_userid = csrf_userid.toInt(),
                                 avatar = newAvatar
                             )

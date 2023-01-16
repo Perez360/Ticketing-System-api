@@ -5,13 +5,12 @@ import kotlinx.serialization.Serializable
 @Serializable
 class APIKey(
     val id: Int=100,
-    val name: String,
-    val authorName: String,
+    val name: String?,
     val token:String?=null,
-    val description: String,
+    val description: String?,
     val dateCreated: String,
-    val canCreateUsers: Int,
-    val canCreateTickets: Int,
-    val canCheckTickets: Int,
-    val shouldReturnTicketNumber: Int
+    val canCreateUsers: Boolean,
+    val canCreateTickets: Boolean,
+    val canCheckTickets: Boolean,
+    val shouldReturnTicketNumber: Boolean
 )

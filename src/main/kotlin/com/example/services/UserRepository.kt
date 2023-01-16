@@ -1,21 +1,32 @@
 package com.example.services
 
+import com.example.dtos.user.*
 import com.example.models.FullUserData
-import com.example.models.RegisterUserData
+import com.example.models.SignupUserData
 import com.example.models.UsersData
 
 interface UserRepository {
-    suspend fun create(registerUserParams: com.example.dtos.RegisterUserParams): RegisterUserData?;
-    suspend fun get(userID: Int): FullUserData?;
-    suspend fun getForLogin(userEmail: String): FullUserData?;
-
-    suspend fun get(email: String): FullUserData?;
-
-    suspend fun updatePassword(changePasswordParams: com.example.dtos.ChangePasswordParams): Int;
-    suspend fun updatePhone(changePhoneParams: com.example.dtos.ChangePhoneParams): Int;
-    suspend fun updateEmail(changeEmailParams: com.example.dtos.ChangeEmailParams): Int;
-    suspend fun updateAvatar(changeAvatarParams: com.example.dtos.ChangeAvatarParams): Int;
-    suspend fun delete(deleteUserParams: com.example.dtos.DeleteUserParams): Int;
+    suspend fun createUser(signupUserDto: SignupUserDto): SignupUserData?
+    suspend fun update(loginDto: LoginDto): Int
+    suspend fun getById(userID: Int): FullUserData?
+    suspend fun getByEmail(userEmail: String): FullUserData?
+    suspend fun update(editPasswordParams: EditPasswordDto): Int
+    suspend fun update(editPhoneDto: EditPhoneDto): Int
+    suspend fun update(verifyEmailDto: VerifyEmailDto): Int
+    suspend fun update(banEmailDto: BanEmailDto): Int
+    suspend fun update(sendPasswordRecoveryDto: SendPasswordRecoveryDto): Int
+    suspend fun update(editEmailDto: EditEmailDto): Int
+    suspend fun update(editAvatarDto: ChangeAvatarDto): Int
+    suspend fun update(userEmail: String): Int
+    suspend fun update(logoutDto: LogoutDto): Int
+    suspend fun delete(deleteUserDto: DeleteUserDto): Int
     suspend fun listAll(): List<UsersData>
-    suspend fun listByName(filterUsersParams: com.example.dtos.FilterUsersParams): List<UsersData>
+    suspend fun filterByName(filterUsersDto: FilterUsersDto): List<UsersData>
+
+
+
+
+
+
+
 }

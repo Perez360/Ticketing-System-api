@@ -1,6 +1,6 @@
 package com.example.routes
 
-import com.example.components.security.UserRequestAuthentication
+import com.example.security.UserRequestAuthentication
 import com.example.contollers.UserController
 import com.example.contollers.impl.UserControllerImpl
 import com.example.shared.APIResponse
@@ -32,8 +32,8 @@ fun Application.configureGetAllUsers() {
             ) {
 
                 val authResponse = UserRequestAuthentication.authenticateRequest(
-                    csrf_userid = csrf_userid,
-                    csrf_token = csrf_token
+                    csrfUserId = csrf_userid,
+                    csrfToken = csrf_token
 
                 )
 

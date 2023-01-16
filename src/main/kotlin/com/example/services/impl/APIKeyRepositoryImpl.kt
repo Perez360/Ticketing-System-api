@@ -1,10 +1,10 @@
 package com.example.services.impl
 
-import com.example.dtos.CreateAPIKeyParams
+import com.example.dtos.user.CreateAPIKeyDto
 import com.example.models.APIKey
 import com.example.security.TokenGenerator
 import com.example.services.APIKeyRepository
-import com.example.tables.APIKeyTable
+import com.example.entities.APIKeyTable
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
@@ -12,20 +12,20 @@ import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.selectAll
 import org.jetbrains.exposed.sql.transactions.transaction
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 class APIKeyRepositoryImpl : APIKeyRepository {
-    override suspend fun create(createAPIKeyParams: CreateAPIKeyParams): Int {
+    override suspend fun create(createAPIKeyDto: CreateAPIKeyDto): Int {
         return transaction {
             APIKeyTable.insert {
-                it[name] = createAPIKeyParams.name
-                it[description] = createAPIKeyParams.description
-                it[authorName] = createAPIKeyParams.authorName
+                it[name] = createAPIKeyDto.name
+                it[description] = createAPIKeyDto.description
                 it[token] = TokenGenerator.getToken()
-                it[dateCreated] = LocalDate.now().toString()
-                it[canCreateUsers] = if (createAPIKeyParams.canCreateUsers) 1 else 0
-                it[canCreateTickets] = if (createAPIKeyParams.canCreateTickets) 1 else 0
-                it[canCheckTickets] = if (createAPIKeyParams.canCheckTickets) 1 else 0
-                it[shouldReturnTicketNumber] = if (createAPIKeyParams.shouldReturnTicketNumber) 1 else 0
+                it[dateCreated] = LocalDateTime.now()
+                it[canCreateUsers] = createAPIKeyDto.canCreateUsers
+                it[canCreateTickets] = createAPIKeyDto.canCreateTickets
+                it[canCheckTickets] = createAPIKeyDto.canCheckTickets
+                it[shouldReturnTicketNumber] = createAPIKeyDto.shouldReturnTicketNumber
             }
         }.insertedCount
 
@@ -38,8 +38,7 @@ class APIKeyRepositoryImpl : APIKeyRepository {
                     APIKey(
                         id = it[APIKeyTable.id],
                         name = it[APIKeyTable.name],
-                        authorName = it[APIKeyTable.authorName],
-                        dateCreated = it[APIKeyTable.dateCreated],
+                        dateCreated = it[APIKeyTable.dateCreated].toString(),
                         description = it[APIKeyTable.description],
                         token = it[APIKeyTable.token],
                         canCreateUsers = it[APIKeyTable.canCreateUsers],
@@ -58,8 +57,7 @@ class APIKeyRepositoryImpl : APIKeyRepository {
                     APIKey(
                         id = it[APIKeyTable.id],
                         name = it[APIKeyTable.name],
-                        authorName = it[APIKeyTable.authorName],
-                        dateCreated = it[APIKeyTable.dateCreated],
+                        dateCreated = it[APIKeyTable.dateCreated].toString(),
                         description = it[APIKeyTable.description],
                         token = it[APIKeyTable.token],
                         canCreateUsers = it[APIKeyTable.canCreateUsers],
@@ -77,8 +75,7 @@ class APIKeyRepositoryImpl : APIKeyRepository {
                 APIKey(
                     id = it[APIKeyTable.id],
                     name = it[APIKeyTable.name],
-                    authorName = it[APIKeyTable.authorName],
-                    dateCreated = it[APIKeyTable.dateCreated],
+                    dateCreated = it[APIKeyTable.dateCreated].toString(),
                     description = it[APIKeyTable.description],
                     token = it[APIKeyTable.token],
                     canCreateUsers = it[APIKeyTable.canCreateUsers],

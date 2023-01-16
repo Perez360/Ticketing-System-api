@@ -1,6 +1,6 @@
 package com.example.services.impl
 
-import com.example.tables.CommentsTable
+import com.example.entities.CommentsTable
 import com.example.models.Comment
 import com.example.services.CommentsRepository
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq

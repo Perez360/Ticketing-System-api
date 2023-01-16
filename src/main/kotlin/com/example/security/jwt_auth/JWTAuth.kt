@@ -9,12 +9,12 @@ import java.util.*
 class JWTAuth private constructor(secretkey: String) {
     fun createToken(fullUserData: FullUserData): String? = JWT
         .create()
-        .withJWTId("${fullUserData.userId}")
+        .withJWTId("${fullUserData.csrf_userid}")
         .withClaim("email", fullUserData.email)
         .withClaim("first_name", fullUserData.firstName)
         .withClaim("last_name", fullUserData.lastName)
         .withClaim("phone", fullUserData.phone)
-        .withClaim("dateRegistered", fullUserData.dateRegistered)
+        .withClaim("signupDate", fullUserData.signupDate)
         .withIssuedAt(DATE)
         .withSubject(SUBJECT)
         .withIssuer(ISSUER)

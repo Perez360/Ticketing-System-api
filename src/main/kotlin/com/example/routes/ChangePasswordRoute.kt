@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.contollers.UserController
 import com.example.contollers.impl.UserControllerImpl
+import com.example.dtos.user.EditPasswordDto
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -39,7 +40,7 @@ fun Application.configureChangePasswordRoute() {
                 && !newPassword.isNullOrEmpty()
             ) {
 
-                val changePasswordParams = com.example.dtos.ChangePasswordParams(
+                val changePasswordParams = EditPasswordDto(
                     csrf_userid = csrf_userid.toInt(),
                     csrf_token = csrf_token,
                     oldPassword = oldPassword,

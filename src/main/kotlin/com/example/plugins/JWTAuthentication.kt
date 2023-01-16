@@ -1,6 +1,6 @@
 package com.example.plugins
 
-import com.example.components.security.jwt_auth.JWTAuth
+import com.example.security.jwt_auth.JWTAuth
 import com.example.shared.APIResponse
 import io.ktor.http.*
 import io.ktor.server.application.*

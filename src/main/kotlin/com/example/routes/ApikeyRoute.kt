@@ -1,8 +1,8 @@
 package com.example.routes
 
-import com.example.components.security.UserRequestAuthentication
 import com.example.contollers.impl.APIKeyControllerImpl
 import com.example.contollers.ApiKeyController
+import com.example.security.UserRequestAuthentication
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -39,8 +39,8 @@ fun Application.configureAPIKey() {
                 ) {
 
                     val authResponse = UserRequestAuthentication.authenticateRequest(
-                        csrf_userid = csrf_userid,
-                        csrf_token = csrf_token
+                        csrfUserId = csrf_userid,
+                        csrfToken = csrf_token
                     )
                     if (authResponse.code == HttpStatusCode.OK.value) {
                         val response = apiController.findAPIKeyByName(apikeynameQuery)

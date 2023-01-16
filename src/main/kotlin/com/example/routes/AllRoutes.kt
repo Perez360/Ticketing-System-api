@@ -19,6 +19,7 @@ fun Application.configureRouting() {
     configureChangeEmail()
     configureFilterBy()
     configureGetAllUsers()
+    configureForgotPassword()
 //    configureGetAUser()
     //configureAPIKey()
     configureLogout()

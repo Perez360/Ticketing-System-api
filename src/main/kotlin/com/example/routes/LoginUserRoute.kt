@@ -2,6 +2,7 @@ package com.example.routes
 
 import com.example.contollers.UserController
 import com.example.contollers.impl.UserControllerImpl
+import com.example.dtos.user.LoginDto
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -43,7 +44,7 @@ fun Application.configureLogin() {
             ) {
 
                 val response = userController.loginUser(
-                    com.example.dtos.LoginParams(
+                    LoginDto(
                         email = email,
                         password = password
                     )

@@ -3,6 +3,7 @@ package com.example.contollers.impl
 import com.example.services.CommentsRepository
 import com.example.models.Comment
 import com.example.contollers.CommentController
+import com.example.dtos.user.CommentsDto
 import com.example.shared.APIResponse
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
@@ -20,7 +21,7 @@ class CommentControllerImpl : CommentController {
     }
     private val commentDao: CommentsRepository = kodein.instance()
 
-    override suspend fun addComment(commentsParams: com.example.dtos.CommentsParams) {
+    override suspend fun addComment(commentsDto: CommentsDto) {
 
     }
 

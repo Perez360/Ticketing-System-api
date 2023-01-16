@@ -1,20 +1,25 @@
 package com.example.contollers
 
+import com.example.dtos.user.*
 import com.example.models.*
 import com.example.shared.APIResponse
 
 interface UserController {
-    suspend fun registerUser(registerUserParams: com.example.dtos.RegisterUserParams): APIResponse<RegisterUserData>
-    suspend fun loginUser(loginParams: com.example.dtos.LoginParams): APIResponse<LoginUserData>
-    suspend fun addAvatar(changeAvatarParams: com.example.dtos.ChangeAvatarParams): APIResponse<String>
+    suspend fun registerUser(signupUserDto: SignupUserDto): APIResponse<SignupUserData>
+    suspend fun verifyEmail(verifyEmailDto: VerifyEmailDto): APIResponse<String>
+    suspend fun sendEmailVerificationToken(userEmail:String): APIResponse<String>
+    suspend fun sendPasswordRecovery(sendPasswordRecoveryDto: SendPasswordRecoveryDto): APIResponse<String>
+    suspend fun loginUser(loginDto: LoginDto): APIResponse<LoginUserData>
+    suspend fun addAvatar(changeAvatarDto: ChangeAvatarDto): APIResponse<String>
 
-    //    suspend fun findUser(email: String): APIResponse<UsersData>
-//    suspend fun findUser(userID: Int): APIResponse<UsersData>
-    suspend fun changeUserPassword(changePasswordParams: com.example.dtos.ChangePasswordParams): APIResponse<ChangePasswordUserData>
-    suspend fun changeUserPhoneNumber(changePhoneParams: com.example.dtos.ChangePhoneParams): APIResponse<ChangePhoneUserData>
-    suspend fun changeUserEmail(changeEmailParams: com.example.dtos.ChangeEmailParams): APIResponse<ChangeEmailUserData>
-    suspend fun deleteUser(deleteUserParams: com.example.dtos.DeleteUserParams): APIResponse<String>
+    suspend fun findUser(email: String): APIResponse<UsersData>
+    suspend fun findUser(userID: Int): APIResponse<UsersData>
+    suspend fun getMyInformation(userID: Int): APIResponse<FullUserData>
+    suspend fun changeUserPassword(changePasswordParams: EditPasswordDto): APIResponse<ChangePasswordUserData>
+    suspend fun changeUserPhoneNumber(editPhoneDto: EditPhoneDto): APIResponse<ChangePhoneUserData>
+    suspend fun changeUserEmail(editEmailDto: EditEmailDto): APIResponse<ChangeEmailUserData>
+    suspend fun deleteUser(deleteUserDto: DeleteUserDto): APIResponse<String>
     suspend fun getAllUsers(): APIResponse<UsersData>
-    suspend fun filterUsers(filterUsersParams: com.example.dtos.FilterUsersParams): APIResponse<UsersData>
-//    suspend fun logoutUser(logoutParams: com.example.dtos.LogoutParams): APIResponse<String>
+    suspend fun filterUsers(filterUsersDto: FilterUsersDto): APIResponse<UsersData>
+    suspend fun logoutUser(logoutParams: LogoutDto): APIResponse<String>
 }

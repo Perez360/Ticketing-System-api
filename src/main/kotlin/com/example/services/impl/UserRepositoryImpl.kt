@@ -1,11 +1,11 @@
 package com.example.services.impl
 
-import com.example.components.dto.*
-import com.example.components.security.TokenGenerator
-import com.example.tables.UserTable
+import com.example.dtos.user.*
+import com.example.entities.UserTable
 import com.example.models.FullUserData
-import com.example.models.RegisterUserData
+import com.example.models.SignupUserData
 import com.example.models.UsersData
+import com.example.security.TokenGenerator
 import com.example.services.UserRepository
 import org.jetbrains.exposed.sql.*
 import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
@@ -13,103 +13,101 @@ import org.jetbrains.exposed.sql.statements.InsertStatement
 import org.jetbrains.exposed.sql.transactions.transaction
 
 class UserRepositoryImpl : UserRepository {
-    override suspend fun create(registerUserParams: com.example.dtos.RegisterUserParams): RegisterUserData? {
+    override suspend fun createUser(signupUserDto: SignupUserDto): SignupUserData? {
+        fun rowToUserReg(resultRow: ResultRow?): SignupUserData? {
+
+            return if (resultRow == null)
+                null
+            else {
+                SignupUserData(
+                    userId = resultRow[UserTable.id],
+                    email = resultRow[UserTable.email],
+                    isVerified = resultRow[UserTable.isVerified],
+                    dateRegistered = resultRow[UserTable.signupDate].toString()
+                )
+            }
+        }
+
         val insertStatement: InsertStatement<Number> = transaction {
             UserTable.insert {
-                it[firstname] = registerUserParams.firstname!!
-                it[lastname] = registerUserParams.lastname!!
-                it[lastname] = registerUserParams.lastname!!
-                it[email] = registerUserParams.email!!
-                it[phone] = registerUserParams.phone!!
-                it[isBan] = 0
-                it[status] = 0
-                it[password] = registerUserParams.password!!
+                it[firstname] = signupUserDto.firstname!!
+                it[lastname] = signupUserDto.lastname!!
+                it[lastname] = signupUserDto.lastname!!
+                it[email] = signupUserDto.email!!
+                it[phone] = signupUserDto.phone!!
+                it[password] = signupUserDto.password!!
             }
         }
         return rowToUserReg(insertStatement.resultedValues?.get(0))
     }
 
-    private fun rowToUserReg(resultRow: ResultRow?): RegisterUserData? {
-        return if (resultRow == null) null else {
-            RegisterUserData(
-                userId = resultRow[UserTable.id],
-                email = resultRow[UserTable.email],
-                status = resultRow[UserTable.status],
-                dateRegistered = resultRow[UserTable.dateRegistered].toString()
-            )
+    override suspend fun update(loginDto: LoginDto): Int {
+        return transaction {
+            UserTable.update({ UserTable.email eq loginDto.email }) {
+                it[isOnline] = true
+            }
         }
     }
 
-    override suspend fun get(userID: Int): FullUserData? {
+    override suspend fun update(verifyEmailDto: VerifyEmailDto): Int {
+        return transaction {
+            UserTable.update({ UserTable.email eq verifyEmailDto.userEmail }) {
+                it[isVerified] = true
+            }
+        }
+    }
+
+
+    override suspend fun getById(userID: Int): FullUserData? {
         return transaction {
             UserTable.select { UserTable.id eq userID }
                 .map {
                     FullUserData(
-                        userId = it[UserTable.id],
+                        csrf_userid = it[UserTable.id],
                         email = it[UserTable.email],
                         avatar = it[UserTable.avatar],
                         firstName = it[UserTable.firstname],
                         lastName = it[UserTable.lastname],
                         phone = it[UserTable.phone],
                         isBan = it[UserTable.isBan],
-                        status = it[UserTable.status],
-                        token = it[UserTable.token],
+                        isStaff = it[UserTable.isStaff],
+                        isOnline = it[UserTable.isOnline],
+                        tickets = it[UserTable.tickets],
+                        isverifield = it[UserTable.isVerified],
+                        verificationToken = it[UserTable.verificationToken],
                         password = it[UserTable.password],
-                        dateRegistered = it[UserTable.dateRegistered].toString()
+                        signupDate = it[UserTable.signupDate].toString()
                     )
                 }.singleOrNull()
         }
 
     }
 
-    override suspend fun get(email: String): FullUserData? {
+    // This method can only be used by owner on the account
+    override suspend fun getByEmail(userEmail: String): FullUserData? {
         return transaction {
-            UserTable.select { UserTable.email eq email }
-                .map {
-                    FullUserData(
-                        userId = it[UserTable.id],
-                        email = it[UserTable.email],
-                        avatar = it[UserTable.avatar],
-                        firstName = it[UserTable.firstname],
-                        lastName = it[UserTable.lastname],
-                        phone = it[UserTable.phone],
-                        isBan = it[UserTable.isBan],
-                        status = it[UserTable.status],
-                        token = it[UserTable.token],
-                        password = it[UserTable.password],
-                        dateRegistered = it[UserTable.dateRegistered].toString()
-                    )
-                }.singleOrNull()
-
-        }
-    }
-
-    override suspend fun getForLogin(userEmail: String): FullUserData? {
-        fun updateToken() {
             transaction {
-                UserTable.update({ UserTable.email eq userEmail }) {
-                    it[status]=1
-                    it[token] = TokenGenerator.getToken()
+                UserTable.update {
+                    it[isOnline] = true
                 }
             }
-        }
-
-        return transaction {
             val query = UserTable.select(UserTable.email eq userEmail)
-            updateToken()
             query.map {
                 FullUserData(
-                    userId = it[UserTable.id],
-                    email = it[UserTable.email],
-                    avatar = it[UserTable.avatar],
+                    csrf_userid = it[UserTable.id],
                     firstName = it[UserTable.firstname],
                     lastName = it[UserTable.lastname],
+                    email = it[UserTable.email],
+                    avatar = it[UserTable.avatar],
                     phone = it[UserTable.phone],
-                    isBan = it[UserTable.isBan],
-                    status = it[UserTable.status],
-                    token = it[UserTable.token],
                     password = it[UserTable.password],
-                    dateRegistered = it[UserTable.dateRegistered].toString()
+                    isBan = it[UserTable.isBan],
+                    isverifield = it[UserTable.isVerified],
+                    isOnline = it[UserTable.isOnline],
+                    signupDate = it[UserTable.signupDate].toString(),
+                    isStaff = it[UserTable.isStaff],
+                    verificationToken = it[UserTable.verificationToken],
+                    tickets = it[UserTable.tickets]
                 )
             }.singleOrNull()
 
@@ -117,41 +115,70 @@ class UserRepositoryImpl : UserRepository {
     }
 
 
-    override suspend fun delete(deleteUserParams: com.example.dtos.DeleteUserParams): Int {
+    override suspend fun delete(deleteUserDto: DeleteUserDto): Int {
         return transaction {
-            UserTable.deleteWhere { id eq deleteUserParams.userID }
+            UserTable.deleteWhere { id eq deleteUserDto.userID }
         }
     }
 
-    override suspend fun updatePassword(changePasswordParams: com.example.dtos.ChangePasswordParams): Int {
+    override suspend fun update(editPasswordParams: EditPasswordDto): Int {
         return transaction {
-            UserTable.update({ UserTable.id eq changePasswordParams.csrf_userid }) {
-                it[password] = changePasswordParams.newPassword
+            UserTable.update({ UserTable.id eq editPasswordParams.csrf_userid }) {
+                it[password] = editPasswordParams.newPassword
             }
         }
 
     }
 
-    override suspend fun updatePhone(changePhoneParams: com.example.dtos.ChangePhoneParams): Int {
+    override suspend fun update(editPhoneDto: EditPhoneDto): Int {
+
         return transaction {
-            UserTable.update({ UserTable.id eq changePhoneParams.csrf_userid }) {
-                it[password] = changePhoneParams.newPhoneNumber
+            UserTable.update({ UserTable.id eq editPhoneDto.csrf_userid }) {
+                it[password] = editPhoneDto.newPhoneNumber
             }
         }
     }
 
-    override suspend fun updateEmail(changeEmailParams: com.example.dtos.ChangeEmailParams): Int {
+    override suspend fun update(banEmailDto: BanEmailDto): Int {
         return transaction {
-            UserTable.update({ UserTable.id eq changeEmailParams.csrf_userid }) {
-                it[email] = changeEmailParams.newEmail
+            UserTable.update({ UserTable.id eq banEmailDto.csrf_userid }) {
+                it[isBan] = true
             }
         }
     }
 
-    override suspend fun updateAvatar(changeAvatarParams: com.example.dtos.ChangeAvatarParams): Int {
+    override suspend fun update(sendPasswordRecoveryDto: SendPasswordRecoveryDto): Int {
+        TODO("Not yet implemented")
+    }
+
+    override suspend fun update(editEmailDto: EditEmailDto): Int {
         return transaction {
-            UserTable.update({ UserTable.id eq changeAvatarParams.csrf_userid }) {
-                it[avatar] = changeAvatarParams.avatar
+            UserTable.update({ UserTable.id eq editEmailDto.csrf_userid }) {
+                it[email] = editEmailDto.newEmail
+            }
+        }
+    }
+
+    override suspend fun update(editAvatarDto: ChangeAvatarDto): Int {
+        return transaction {
+            UserTable.update({ UserTable.id eq editAvatarDto.csrf_userid }) {
+                it[avatar] = editAvatarDto.avatar
+            }
+        }
+    }
+
+    override suspend fun update(userEmail: String): Int {
+        return transaction {
+            UserTable.update({ UserTable.email eq userEmail }) {
+                it[verificationToken] = TokenGenerator.getToken()
+            }
+        }
+    }
+
+    override suspend fun update(logoutDto: LogoutDto): Int {
+        return transaction {
+            UserTable.update({ UserTable.id eq logoutDto.csrf_userid }) {
+                it[isOnline] = false
             }
         }
     }
@@ -164,20 +191,19 @@ class UserRepositoryImpl : UserRepository {
                     firstName = it[UserTable.firstname],
                     lastName = it[UserTable.lastname],
                     phone = it[UserTable.phone],
-                    status = it[UserTable.status],
-                    isBan = it[UserTable.isBan],
+                    isOnline = it[UserTable.isOnline],
                     email = it[UserTable.email],
                     avatar = it[UserTable.avatar],
-                    dateRegistered = it[UserTable.dateRegistered].toString(),
+                    signupDate = it[UserTable.signupDate].toString(),
                 )
             }
         }
     }
 
-    override suspend fun listByName(filterUsersParams: com.example.dtos.FilterUsersParams): List<UsersData> {
+    override suspend fun filterByName(filterUsersDto: FilterUsersDto): List<UsersData> {
         return transaction {
             val query = UserTable.selectAll()
-            filterUsersParams.byName?.let {
+            filterUsersDto.byName?.let {
                 query.andWhere { UserTable.firstname eq it or (UserTable.lastname eq it) }
             }
 
@@ -187,11 +213,10 @@ class UserRepositoryImpl : UserRepository {
                     firstName = it[UserTable.firstname],
                     lastName = it[UserTable.lastname],
                     phone = it[UserTable.phone],
-                    status = it[UserTable.status],
-                    isBan = it[UserTable.isBan],
+                    isOnline = it[UserTable.isOnline],
                     email = it[UserTable.email],
                     avatar = it[UserTable.avatar],
-                    dateRegistered = it[UserTable.dateRegistered].toString(),
+                    signupDate = it[UserTable.signupDate].toString(),
                 )
             }
         }
