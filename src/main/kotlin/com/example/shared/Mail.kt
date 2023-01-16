@@ -1,5 +1,6 @@
 package com.example.shared
 
+import com.example.models.FullUserData
 import com.example.security.TokenGenerator
 import com.example.shared.html.generatehtmlTemplate
 import kotlinx.serialization.Serializable
@@ -12,7 +13,7 @@ import org.slf4j.LoggerFactory
 @Serializable
 object Mail {
     private val log: Logger = LoggerFactory.getLogger(this::class.java)
-    fun sendMail(userEmail: String, firstName: String): String? {
+    fun sendMail(fullUserData: FullUserData): String? {
         try {
             val htmlEmail = HtmlEmail()
             htmlEmail.hostName = "smtp.googlemail.com"
@@ -20,10 +21,10 @@ object Mail {
             htmlEmail.isSSLOnConnect = true
             htmlEmail.setDebug(true)
             htmlEmail.setAuthenticator(DefaultAuthenticator("isaacodei360@gmail.com", "pigvsxqgaseqislg"))
-            htmlEmail.addTo(userEmail)
+            htmlEmail.addTo(fullUserData.userEmail)
             htmlEmail.setFrom("isaacodei360@gmail.com", "PerezSite")
             htmlEmail.subject = "PerezSite - Account Verification"
-            htmlEmail.setHtmlMsg(generatehtmlTemplate(firstName, TokenGenerator.getToken()))
+            htmlEmail.setHtmlMsg(generatehtmlTemplate(fullUserData.firstName, fullUserData.verificationToken))
             return htmlEmail.send()
 
         } catch (sql: EmailException) {

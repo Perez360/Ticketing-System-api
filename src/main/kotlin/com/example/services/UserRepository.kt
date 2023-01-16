@@ -19,6 +19,7 @@ interface UserRepository {
     suspend fun update(editAvatarDto: ChangeAvatarDto): Int
     suspend fun update(userEmail: String): Int
     suspend fun update(logoutDto: LogoutDto): Int
+     fun deleteVerificationToken(userEmail: String): Int
     suspend fun delete(deleteUserDto: DeleteUserDto): Int
     suspend fun listAll(): List<UsersData>
     suspend fun filterByName(filterUsersDto: FilterUsersDto): List<UsersData>

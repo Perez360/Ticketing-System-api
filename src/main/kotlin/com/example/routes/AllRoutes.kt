@@ -13,6 +13,8 @@ fun Application.configureRouting() {
     }
     configureRegister()
     configureLogin()
+    configureVerifyEmail()
+    configureSendEmailVerificationToken()
     configureChangePasswordRoute()
     configureDashboard()
     configureAvatar()

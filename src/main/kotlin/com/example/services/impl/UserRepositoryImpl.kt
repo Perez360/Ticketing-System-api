@@ -16,8 +16,7 @@ class UserRepositoryImpl : UserRepository {
     override suspend fun createUser(signupUserDto: SignupUserDto): SignupUserData? {
         fun rowToUserReg(resultRow: ResultRow?): SignupUserData? {
 
-            return if (resultRow == null)
-                null
+            return if (resultRow == null) null
             else {
                 SignupUserData(
                     userId = resultRow[UserTable.id],
@@ -60,25 +59,24 @@ class UserRepositoryImpl : UserRepository {
 
     override suspend fun getById(userID: Int): FullUserData? {
         return transaction {
-            UserTable.select { UserTable.id eq userID }
-                .map {
-                    FullUserData(
-                        csrf_userid = it[UserTable.id],
-                        email = it[UserTable.email],
-                        avatar = it[UserTable.avatar],
-                        firstName = it[UserTable.firstname],
-                        lastName = it[UserTable.lastname],
-                        phone = it[UserTable.phone],
-                        isBan = it[UserTable.isBan],
-                        isStaff = it[UserTable.isStaff],
-                        isOnline = it[UserTable.isOnline],
-                        tickets = it[UserTable.tickets],
-                        isverifield = it[UserTable.isVerified],
-                        verificationToken = it[UserTable.verificationToken],
-                        password = it[UserTable.password],
-                        signupDate = it[UserTable.signupDate].toString()
-                    )
-                }.singleOrNull()
+            UserTable.select { UserTable.id eq userID }.map {
+                FullUserData(
+                    csrf_userid = it[UserTable.id],
+                    userEmail = it[UserTable.email],
+                    avatar = it[UserTable.avatar],
+                    firstName = it[UserTable.firstname],
+                    lastName = it[UserTable.lastname],
+                    phone = it[UserTable.phone],
+                    isBan = it[UserTable.isBan],
+                    isStaff = it[UserTable.isStaff],
+                    isOnline = it[UserTable.isOnline],
+                    tickets = it[UserTable.tickets],
+                    isverifield = it[UserTable.isVerified],
+                    verificationToken = it[UserTable.verificationToken],
+                    password = it[UserTable.password],
+                    signupDate = it[UserTable.signupDate].toString()
+                )
+            }.singleOrNull()
         }
 
     }
@@ -86,18 +84,13 @@ class UserRepositoryImpl : UserRepository {
     // This method can only be used by owner on the account
     override suspend fun getByEmail(userEmail: String): FullUserData? {
         return transaction {
-            transaction {
-                UserTable.update {
-                    it[isOnline] = true
-                }
-            }
             val query = UserTable.select(UserTable.email eq userEmail)
             query.map {
                 FullUserData(
                     csrf_userid = it[UserTable.id],
                     firstName = it[UserTable.firstname],
                     lastName = it[UserTable.lastname],
-                    email = it[UserTable.email],
+                    userEmail = it[UserTable.email],
                     avatar = it[UserTable.avatar],
                     phone = it[UserTable.phone],
                     password = it[UserTable.password],
@@ -113,7 +106,6 @@ class UserRepositoryImpl : UserRepository {
 
         }
     }
-
 
     override suspend fun delete(deleteUserDto: DeleteUserDto): Int {
         return transaction {
@@ -136,6 +128,14 @@ class UserRepositoryImpl : UserRepository {
             UserTable.update({ UserTable.id eq editPhoneDto.csrf_userid }) {
                 it[password] = editPhoneDto.newPhoneNumber
             }
+        }
+    }
+
+    override  fun deleteVerificationToken(userEmail: String): Int {
+         return transaction {
+             UserTable.update({ UserTable.email eq userEmail }) {
+                 it[verificationToken] = null
+             }
         }
     }
 

@@ -11,7 +11,6 @@ import com.example.shared.APIResponse
 import com.example.shared.Mail.sendMail
 import com.example.shared.RespondsMessages.ALREADY_LOGGED_OUT
 import com.example.shared.RespondsMessages.EMAIL_ALREADY_VERIFIED
-import com.example.shared.RespondsMessages.EMAIL_VERIFY_FAILED
 import com.example.shared.RespondsMessages.EMAIL_VERIFY_SUCCESS
 import com.example.shared.RespondsMessages.FAILURE_AVATAR
 import com.example.shared.RespondsMessages.FAILURE_DELETE_USER
@@ -25,7 +24,6 @@ import com.example.shared.RespondsMessages.INVALID_PHONE
 import com.example.shared.RespondsMessages.LOGIN_FAILURE
 import com.example.shared.RespondsMessages.LOGIN_SUCCESS
 import com.example.shared.RespondsMessages.MISSING_PARAMETERS
-import com.example.shared.RespondsMessages.NO_USER_FOUND
 import com.example.shared.RespondsMessages.SAME_PASSWORD
 import com.example.shared.RespondsMessages.SERVER_ERROR
 import com.example.shared.RespondsMessages.SESSION_COOKIE_CHANGED
@@ -45,6 +43,9 @@ import com.example.shared.RespondsMessages.TOKEN_SENT_FAILURE
 import com.example.shared.RespondsMessages.TOKEN_SENT_SUCCESS
 import com.example.shared.RespondsMessages.USER_ALREADY_EXIST
 import com.example.shared.RespondsMessages.USER_NOT_EXIST
+import com.example.shared.TokenTimer
+import com.example.shared.TokenTimer.startTokenTimer
+import com.example.shared.TokenTimer.stopTokenTimer
 import com.github.salomonbrys.kodein.Kodein
 import com.github.salomonbrys.kodein.bind
 import com.github.salomonbrys.kodein.instance
@@ -101,18 +102,20 @@ class UserControllerImpl : UserController {
         val response: APIResponse<String> = try {
             val oneUser = userRepository.getByEmail(verifyEmailDto.userEmail)
             if (oneUser != null) {
-                if (oneUser.verificationToken == verifyEmailDto.verificationToken) {
+                if (!oneUser.isverifield && (oneUser.verificationToken == verifyEmailDto.verificationToken)) {
+                    stopTokenTimer()
+                    userRepository.update(verifyEmailDto)
                     APIResponse(
                         HttpStatusCode.OK.value, EMAIL_VERIFY_SUCCESS, listOf()
                     )
                 } else {
                     APIResponse(
-                        HttpStatusCode.OK.value, EMAIL_VERIFY_FAILED, listOf()
+                        HttpStatusCode.OK.value, EMAIL_ALREADY_VERIFIED, listOf()
                     )
                 }
-            }else{
+            } else {
                 APIResponse(
-                    HttpStatusCode.OK.value, NO_USER_FOUND, listOf()
+                    HttpStatusCode.OK.value, USER_NOT_EXIST, listOf()
                 )
             }
 
@@ -132,9 +135,11 @@ class UserControllerImpl : UserController {
                 if (!oneUser.isverifield) {
                     val count = userRepository.update(userEmail)
                     if (count > 0) {
-                        if (sendMail(oneUser.email, oneUser.firstName) != null) {
+                        val updatedUser = userRepository.getById(oneUser.csrf_userid)!!
+                        if (sendMail(updatedUser) != null) {
+                            startTokenTimer(userEmail)
                             APIResponse(
-                                HttpStatusCode.Continue.value, TOKEN_SENT_SUCCESS, listOf()
+                                HttpStatusCode.OK.value, TOKEN_SENT_SUCCESS, listOf()
                             )
                         } else {
                             APIResponse(
@@ -148,12 +153,12 @@ class UserControllerImpl : UserController {
                     }
                 } else {
                     APIResponse(
-                        HttpStatusCode.OK.value, NO_USER_FOUND, listOf()
+                        HttpStatusCode.OK.value, EMAIL_ALREADY_VERIFIED, listOf()
                     )
                 }
             } else {
                 APIResponse(
-                    HttpStatusCode.OK.value, EMAIL_ALREADY_VERIFIED, listOf()
+                    HttpStatusCode.OK.value, USER_NOT_EXIST, listOf()
                 )
             }
 
@@ -171,7 +176,7 @@ class UserControllerImpl : UserController {
             if (oneUser != null) {
                 val count = userRepository.update(sendPasswordRecoveryDto)
                 if (count > 0) {
-                    sendMail(oneUser.email, oneUser.firstName)
+                    sendMail(oneUser)
                     APIResponse(
                         HttpStatusCode.OK.value, TOKEN_SENT_SUCCESS, listOf()
                     )
@@ -183,7 +188,7 @@ class UserControllerImpl : UserController {
 
             } else {
                 APIResponse(
-                    HttpStatusCode.OK.value, NO_USER_FOUND, listOf()
+                    HttpStatusCode.OK.value, USER_NOT_EXIST, listOf()
                 )
             }
 
@@ -206,7 +211,7 @@ class UserControllerImpl : UserController {
                     userId = oneUser.csrf_userid,
                     firstName = oneUser.firstName,
                     lastName = oneUser.lastName,
-                    email = oneUser.email,
+                    email = oneUser.userEmail,
                     avatar = oneUser.avatar,
                     phone = oneUser.phone,
                     isOnline = oneUser.isOnline,
@@ -237,7 +242,7 @@ class UserControllerImpl : UserController {
                     userId = oneUser.csrf_userid,
                     firstName = oneUser.firstName,
                     lastName = oneUser.lastName,
-                    email = oneUser.email,
+                    email = oneUser.userEmail,
                     avatar = oneUser.avatar,
                     phone = oneUser.phone,
                     isOnline = oneUser.isOnline,
@@ -268,7 +273,7 @@ class UserControllerImpl : UserController {
                     csrf_userid = oneUser.csrf_userid,
                     firstName = oneUser.firstName,
                     lastName = oneUser.lastName,
-                    email = oneUser.email,
+                    userEmail = oneUser.userEmail,
                     avatar = oneUser.avatar,
                     phone = oneUser.phone,
                     password = oneUser.password,
@@ -306,7 +311,7 @@ class UserControllerImpl : UserController {
                         if (userRepository.update(changePasswordParams) > 0) {
                             val updatedUser = ChangePasswordUserData(
                                 userId = oneUser.csrf_userid,
-                                email = oneUser.email,
+                                email = oneUser.userEmail,
                                 oldPassword = changePasswordParams.oldPassword,
                                 newPassword = changePasswordParams.newPassword
                             )
@@ -344,7 +349,7 @@ class UserControllerImpl : UserController {
                 if (userRepository.update(editPhoneDto) > 0) {
                     val updatedUser = ChangePhoneUserData(
                         userId = oneUser.csrf_userid,
-                        email = oneUser.email,
+                        email = oneUser.userEmail,
                         oldPhoneNumber = editPhoneDto.oldPhoneNumber,
                         newPhoneNumber = editPhoneDto.newPhoneNumber
                     )
@@ -370,7 +375,7 @@ class UserControllerImpl : UserController {
             if (oneUser != null) {
                 if (userRepository.update(editEmailDto) > 0) {
                     val updatedUser = ChangeEmailUserData(
-                        userId = oneUser.csrf_userid, email = oneUser.email, newEmail = oneUser.email
+                        userId = oneUser.csrf_userid, email = oneUser.userEmail, newEmail = oneUser.userEmail
                     )
                     APIResponse(
                         HttpStatusCode.OK.value, SUCCESS_EMAIL_UPDATE, listOf(updatedUser)
@@ -408,6 +413,7 @@ class UserControllerImpl : UserController {
         val response: APIResponse<LoginUserData> = try {
             val oneUser = userRepository.getByEmail(loginDto.email)
             if (oneUser != null) {
+                val count = userRepository.update(loginDto)
                 val oneSessionCookie = sessionCookieRepository.getSessionCookie(oneUser.csrf_userid)
                 // Check is user session already active
                 if (oneSessionCookie != null) {
@@ -418,7 +424,7 @@ class UserControllerImpl : UserController {
                             userId = oneUser.csrf_userid,
                             firstName = oneUser.firstName,
                             lastName = oneUser.lastName,
-                            email = oneUser.email,
+                            email = oneUser.userEmail,
                             avatar = oneUser.avatar,
                             token = newSessionCookie!!.token,
                         )
@@ -438,7 +444,7 @@ class UserControllerImpl : UserController {
                             userId = oneUser.csrf_userid,
                             firstName = oneUser.firstName,
                             lastName = oneUser.lastName,
-                            email = oneUser.email,
+                            email = oneUser.userEmail,
                             avatar = oneUser.avatar,
                             token = newSessionCookie.token,
                         )
@@ -488,7 +494,7 @@ class UserControllerImpl : UserController {
             if (listOfUsers.isNotEmpty()) {
                 APIResponse(HttpStatusCode.OK.value, "(${listOfUsers.size}) user(s) found", listOfUsers)
             } else {
-                APIResponse(HttpStatusCode.OK.value, NO_USER_FOUND, emptyList())
+                APIResponse(HttpStatusCode.OK.value, USER_NOT_EXIST, emptyList())
             }
         } catch (se: SQLException) {
             log.warn("An error occurred when processing sale", se)
@@ -504,7 +510,7 @@ class UserControllerImpl : UserController {
             if (filteredUsers.isNotEmpty()) {
                 APIResponse(HttpStatusCode.OK.value, "(${filteredUsers.size}) user(s) found", filteredUsers)
             } else {
-                APIResponse(HttpStatusCode.NoContent.value, NO_USER_FOUND, listOf())
+                APIResponse(HttpStatusCode.NoContent.value, USER_NOT_EXIST, listOf())
             }
         } catch (sql: SQLException) {
             log.warn("An error occurred when processing sale", sql)
@@ -528,7 +534,7 @@ class UserControllerImpl : UserController {
                     APIResponse(HttpStatusCode.OK.value, FAILURE_LOGOUT, listOf())
                 }
             } else {
-                APIResponse(HttpStatusCode.NoContent.value, NO_USER_FOUND, listOf())
+                APIResponse(HttpStatusCode.NoContent.value, USER_NOT_EXIST, listOf())
             }
         } catch (sql: SQLException) {
             log.warn("An error occurred when processing sale", sql)

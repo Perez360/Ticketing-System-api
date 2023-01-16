@@ -10,7 +10,7 @@ class JWTAuth private constructor(secretkey: String) {
     fun createToken(fullUserData: FullUserData): String? = JWT
         .create()
         .withJWTId("${fullUserData.csrf_userid}")
-        .withClaim("email", fullUserData.email)
+        .withClaim("email", fullUserData.userEmail)
         .withClaim("first_name", fullUserData.firstName)
         .withClaim("last_name", fullUserData.lastName)
         .withClaim("phone", fullUserData.phone)

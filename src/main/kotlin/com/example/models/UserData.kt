@@ -37,7 +37,7 @@ data class FullUserData(
     var csrf_userid: Int,
     var firstName: String,
     var lastName: String,
-    var email: String,
+    var userEmail: String,
     var avatar: String?,
     var phone: String,
     var password: String,
